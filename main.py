@@ -1,11 +1,11 @@
-from tkinter import S
-
 import pygame
 from pygame import display
 
+from asteroid import * 
 from constants import *
 from logger import log_state
 from player import Player
+from asteroidfield import *
 
 
 
@@ -19,7 +19,19 @@ def main():
     dt = 0
     x = SCREEN_WIDTH/2
     y = SCREEN_HEIGHT/2
+    updatable = pygame.sprite.Group()
+    drawable = pygame.sprite.Group()
+    asteroids = pygame.sprite.Group()
+    #asteroidfields = pygame.sprite.Group()
+
+    Player.containers = (updatable, drawable) # type: ignore[unused]
+    Asteroid.containers = (asteroids, updatable, drawable) # type: ignore[unused]
+    AsteroidField.containers = updatable # type: ignore[unused]
+
+
     player = Player(x,y)
+    astrof = AsteroidField()
+    
 
     while True:
         
@@ -27,12 +39,24 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
+        
+
+        
         screen.fill("black")
-        player.update(dt)
-        player.draw(screen)
+
+        for obj in updatable:
+            obj.update(dt)
+        
+        for draws in drawable:
+            draws.draw(screen)
+
+        
+
         display.flip()
         dt = (clock_ast.tick(60)) / 1000
         print(dt)
 
 if __name__ == "__main__":
     main()
+
+
