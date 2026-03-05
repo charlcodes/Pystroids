@@ -1,36 +1,48 @@
 import pygame
 from pygame import display
 
+import sys
 from asteroid import * 
 from constants import *
-from logger import log_state
+from logger import log_state, log_event
 from player import Player
 from asteroidfield import *
+from shot import Shot
 
 
 
 def main():
+    
     pygame.init()
+    
     screen = pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT))
 
     print(f"Starting Asteroids with pygame version: {pygame.version.ver}")
     print(f"Screen width: {SCREEN_WIDTH}\nScreen height: {SCREEN_HEIGHT}")
+    
     clock_ast = pygame.time.Clock()
     dt = 0
+    
     x = SCREEN_WIDTH/2
     y = SCREEN_HEIGHT/2
+
+    ###
+
     updatable = pygame.sprite.Group()
     drawable = pygame.sprite.Group()
     asteroids = pygame.sprite.Group()
-    #asteroidfields = pygame.sprite.Group()
+    shots = pygame.sprite.Group()
+
+    ###
 
     Player.containers = (updatable, drawable) # type: ignore[unused]
     Asteroid.containers = (asteroids, updatable, drawable) # type: ignore[unused]
     AsteroidField.containers = updatable # type: ignore[unused]
-
+    Shot.containers = (shots, updatable, drawable) # type: ignore[unused]
 
     player = Player(x,y)
     astrof = AsteroidField()
+    
     
 
     while True:
@@ -40,12 +52,21 @@ def main():
             if event.type == pygame.QUIT:
                 return
         
-
-        
         screen.fill("black")
 
         for obj in updatable:
             obj.update(dt)
+        
+        for obj in asteroids:
+            if obj.collides_with(player) == True:
+                log_event("player_hit")
+                print("Game over!")
+                sys.exit()
+            for bullet in shots:
+                if obj.collides_with(bullet) == True:
+                    log_event("asteroid_shot")
+                    bullet.kill()
+                    obj.split()
         
         for draws in drawable:
             draws.draw(screen)
@@ -54,7 +75,7 @@ def main():
 
         display.flip()
         dt = (clock_ast.tick(60)) / 1000
-        print(dt)
+        #print(dt)
 
 if __name__ == "__main__":
     main()
