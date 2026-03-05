@@ -7,7 +7,8 @@ from constants import *
 from logger import log_state, log_event
 from player import Player
 from asteroidfield import *
-from shot import Shot
+from shot import Explosion, Shot
+from score import *
 
 
 
@@ -32,6 +33,8 @@ def main():
     drawable = pygame.sprite.Group()
     asteroids = pygame.sprite.Group()
     shots = pygame.sprite.Group()
+    explosions = pygame.sprite.Group()
+    scores = pygame.sprite.Group() #
 
     ###
 
@@ -39,10 +42,11 @@ def main():
     Asteroid.containers = (asteroids, updatable, drawable) # type: ignore[unused]
     AsteroidField.containers = updatable # type: ignore[unused]
     Shot.containers = (shots, updatable, drawable) # type: ignore[unused]
-
+    Explosion.containers = (explosions, updatable, drawable) # type: ignore[unused]
+    #Score.containers = drawable # type: ignore
     player = Player(x,y)
-    astrof = AsteroidField()
-    
+    astrof = AsteroidField() # # #
+    scr = Score()
     
 
     while True:
@@ -63,15 +67,19 @@ def main():
                 print("Game over!")
                 sys.exit()
             for bullet in shots:
-                if obj.collides_with(bullet) == True:
+                if obj.collides_with(bullet) == True: # :/ astroid collides with bullet
                     log_event("asteroid_shot")
                     bullet.kill()
-                    obj.split()
-        
+                    obj.split(scr)
+            for explotion in explosions:
+                if obj.collides_with(explotion):
+                    log_event("explosion_touched_astroid")
+                    obj.split(scr)
+
         for draws in drawable:
             draws.draw(screen)
 
-        
+        scr.draw(screen)
 
         display.flip()
         dt = (clock_ast.tick(60)) / 1000
